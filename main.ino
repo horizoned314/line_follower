@@ -30,23 +30,34 @@
 #include <AFMotor.h>
 
 // =========================== KONFIGURASI & TUNING ===========================
-const int MAX_SPEED      = 200;
-const int BASE_SPEED     = 150;
-const int MIN_BASE_SPEED = 50;
-const int TURN_SPEED     = 200;
+// --- MOTOR SPEED CONSTANTS (0-255) ---
+const int MAX_SPEED      = 200;  // Maximum motor speed limit
+const int BASE_SPEED     = 150;  // Normal cruising speed on straight line
+const int MIN_BASE_SPEED = 50;   // Minimum speed during sharp turns
+const int TURN_SPEED     = 200;  // Speed during recovery/junction turns
 
+// --- PID TUNING PARAMETERS ---
+// Kp: Proportional gain - controls reaction strength (typical range: 0.01 - 0.10)
+// Ki: Integral gain - corrects steady-state error (typical range: 0.0001 - 0.001)
+// Kd: Derivative gain - dampens oscillations (typical range: 3.0 - 10.0)
 float Kp = 0.045;
-float Ki = 0.0004;   // kecil agar tidak overshoot
+float Ki = 0.0004;
 float Kd = 7.0;
 
-const int DEADBAND       = 15;
-const int BRAKE_FACTOR   = 90;
-const int LINE_LOST_DELAY = 140;    // toleransi putus-putus (ms)
-const int SHARP_ERROR     = 1300;
-const float SHARP_MULTIPLIER = 1.9;
+// --- PID BEHAVIOR MODIFIERS ---
+const int DEADBAND       = 15;    // Error deadband for stable straight tracking
+const int BRAKE_FACTOR   = 90;    // Dynamic braking intensity (0-100)
+const int SHARP_ERROR     = 1300;  // Error threshold for sharp turn detection
+const float SHARP_MULTIPLIER = 1.9;  // PID multiplier for sharp turns
 
-const int DEAD_END_TIMEOUT = 450;   // ms: kalau hilang garis > ini, anggap buntu
-const int JUNCTION_COUNT_MIN = 2;   // jumlah sensor aktif minimal utk deteksi simpang
+// --- TIMING CONSTANTS (milliseconds) ---
+const int LINE_LOST_DELAY = 140;    // Tolerance for broken/dashed lines
+const int DEAD_END_TIMEOUT = 450;   // Timeout before dead-end detection
+const int JUNCTION_DELAY = 120;     // Delay during junction navigation
+const int SPIN_TIME = 280;          // U-turn rotation duration (~180 degrees)
+
+// --- DETECTION THRESHOLDS ---
+const int JUNCTION_THRESHOLD = 3;   // Minimum active sensors for junction detection
 
 // =========================== HARDWARE ===========================
 AF_DCMotor motorLeft(3);
@@ -112,7 +123,7 @@ void loop() {
   }
 
   // ================= DETEKSI SIMPANG & BELAKU =================
-  if (activeCount >= JUNCTION_COUNT_MIN + 1) {
+  if (activeCount >= JUNCTION_THRESHOLD) {
     handleJunction(activeCount);
     return;
   }
@@ -207,18 +218,18 @@ void handleJunction(int activeCount) {
       setMotorSpeed(TURN_SPEED, -TURN_SPEED);
     }
   }
-  delay(120); // pendek, cukup untuk masuk jalur baru
+  delay(JUNCTION_DELAY); // Cukup untuk masuk jalur baru
 }
 
 void handleDeadEnd() {
   // Dead-end: putar 160-200 derajat ke arah berlawanan dari lastDirection
-  int spinTime = 280; // sesuaikan dengan kecepatan & gear
+  // Putar berlawanan arah terakhir untuk mencegah kembali ke jalur semula
   if (lastDirection == 1) {
     setMotorSpeed(-TURN_SPEED, TURN_SPEED); // putar kiri
   } else {
     setMotorSpeed(TURN_SPEED, -TURN_SPEED); // putar kanan
   }
-  delay(spinTime);
+  delay(SPIN_TIME);
 }
 
 // =========================== FAILSAFE PUTUS GARIS ===========================

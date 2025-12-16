@@ -97,27 +97,22 @@ const int TURN_SPEED     = 200;  // Kecepatan saat spin recovery
 ```cpp
 const int LINE_LOST_DELAY   = 140;  // Toleransi garis putus (ms)
 const int DEAD_END_TIMEOUT  = 450;  // Timeout deteksi buntu (ms)
+const int JUNCTION_DELAY    = 120;  // Delay saat navigasi junction (ms)
+const int SPIN_TIME         = 280;  // Durasi putar U-turn (ms)
 ```
 **Kalibrasi:**
 - `LINE_LOST_DELAY`: Naikkan jika garis putus-putus lebih panjang
 - `DEAD_END_TIMEOUT`: Sesuaikan dengan panjang jarak dead-end
+- `JUNCTION_DELAY`: Durasi minimal untuk masuk jalur baru di junction
+- `SPIN_TIME`: Robot harus putar ~160-200°, test di tempat untuk 180°
 
-### 5. Dead-End Spin Time
-```cpp
-int spinTime = 280;  // Durasi putar U-turn (ms)
-```
-**Kalibrasi:**
-- Robot harus putar ~160-200 derajat
-- Test di tempat, ukur durasi untuk 180°
-- Kurangi sedikit agar tidak kembali ke arah semula
-
-### 6. Advanced Parameters
+### 5. Advanced Parameters
 ```cpp
 const int DEADBAND           = 15;    // Error deadband
 const int BRAKE_FACTOR       = 90;    // Dynamic braking intensity
 const int SHARP_ERROR        = 1300;  // Threshold error tajam
 const float SHARP_MULTIPLIER = 1.9;   // Multiplier untuk sharp turn
-const int JUNCTION_COUNT_MIN = 2;     // Min sensor aktif untuk junction
+const int JUNCTION_THRESHOLD = 3;     // Min sensor aktif untuk junction
 ```
 
 ## 🚀 Quick Start
